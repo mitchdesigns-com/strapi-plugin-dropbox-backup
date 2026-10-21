@@ -9,14 +9,35 @@ both.
 
 ## Install
 
-```sh
-pnpm add github:mitchdesigns-com/strapi-plugin-dropbox-backup#v0.1.0
+Any package manager. The plugin itself does not care which — Strapi finds it by
+the `strapi.kind` field in its `package.json` — but the peer dependency has to
+be pinned by hand, for different reasons per manager: npm would otherwise
+auto-install the newest 5.x, yarn 1 would install nothing and only warn, and
+pnpm would resolve it against the range rather than against this site.
 
-# Peer dep: the export archive is built with it. It reaches into Strapi's
-# internals, so its version has to match @strapi/strapi exactly - skip this if
-# it is already a dependency.
+```sh
+# pnpm
+pnpm add github:mitchdesigns-com/strapi-plugin-dropbox-backup#v0.1.1
 pnpm add @strapi/data-transfer@$(node -p "require('@strapi/strapi/package.json').version")
+
+# npm
+npm install github:mitchdesigns-com/strapi-plugin-dropbox-backup#v0.1.1
+npm install @strapi/data-transfer@$(node -p "require('@strapi/strapi/package.json').version")
+
+# yarn 1
+yarn add github:mitchdesigns-com/strapi-plugin-dropbox-backup#v0.1.1
+yarn add @strapi/data-transfer@$(node -p "require('@strapi/strapi/package.json').version")
 ```
+
+`@strapi/data-transfer` builds the export archive and reaches into Strapi core
+internals, so its version has to equal `@strapi/strapi`'s exactly — hence
+deriving it from the installed one. Skip that second command if it is already a
+dependency at the right version.
+
+Every peer is declared optional, so no manager installs one on its own. The
+other three (`@strapi/strapi`, `@strapi/design-system`, `react`) are already in
+any Strapi 5 app, directly or through `@strapi/strapi`, and the admin build
+resolves them through Strapi's own Vite aliases.
 
 Strapi 5 auto-loads any dependency whose `package.json` carries
 `strapi.kind: "plugin"`, so no `config/plugins.js` entry is required. Add one

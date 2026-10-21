@@ -1,6 +1,6 @@
 {
   "name": "strapi-plugin-dropbox-backup",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Backs up a Strapi 5 instance - database, schemas and media - to Dropbox on a cron, with an admin page to run one on demand.",
   "license": "UNLICENSED",
   "repository": {
@@ -45,6 +45,12 @@
     "react": "^18.0.0 || ^19.0.0"
   },
   "peerDependenciesMeta": {
+    "@strapi/strapi": {
+      "optional": true
+    },
+    "@strapi/data-transfer": {
+      "optional": true
+    },
     "@strapi/design-system": {
       "optional": true
     },
