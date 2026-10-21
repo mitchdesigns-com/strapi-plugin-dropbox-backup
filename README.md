@@ -11,7 +11,11 @@ both.
 
 ```sh
 pnpm add github:mitchdesigns-com/strapi-plugin-dropbox-backup#v0.1.0
-pnpm add @strapi/data-transfer   # peer dep: the export archive is built with it
+
+# Peer dep: the export archive is built with it. It reaches into Strapi's
+# internals, so its version has to match @strapi/strapi exactly - skip this if
+# it is already a dependency.
+pnpm add @strapi/data-transfer@$(node -p "require('@strapi/strapi/package.json').version")
 ```
 
 Strapi 5 auto-loads any dependency whose `package.json` carries
