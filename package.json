@@ -1,0 +1,58 @@
+{
+  "name": "strapi-plugin-dropbox-backup",
+  "version": "0.1.0",
+  "description": "Backs up a Strapi 5 instance - database, schemas and media - to Dropbox on a cron, with an admin page to run one on demand.",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mitchdesigns-com/strapi-plugin-dropbox-backup.git"
+  },
+  "keywords": [
+    "strapi",
+    "plugin",
+    "backup",
+    "dropbox"
+  ],
+  "strapi": {
+    "name": "dropbox-backup",
+    "kind": "plugin",
+    "displayName": "Dropbox backup",
+    "description": "Backs up the database, schemas and media to Dropbox."
+  },
+  "exports": {
+    "./strapi-admin": {
+      "import": "./admin/src/index.js",
+      "default": "./admin/src/index.js"
+    },
+    "./strapi-server": {
+      "require": "./strapi-server.js",
+      "default": "./strapi-server.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "admin",
+    "bin",
+    "server",
+    "strapi-admin.js",
+    "strapi-server.js",
+    "README.md"
+  ],
+  "peerDependencies": {
+    "@strapi/data-transfer": "^5.0.0",
+    "@strapi/design-system": "^2.0.0",
+    "@strapi/strapi": "^5.0.0",
+    "react": "^18.0.0 || ^19.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@strapi/design-system": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": ">=20.0.0 <=26.x.x"
+  }
+}
