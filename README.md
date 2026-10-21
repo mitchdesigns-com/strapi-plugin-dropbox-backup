@@ -9,35 +9,40 @@ both.
 
 ## Install
 
-Any package manager. The plugin itself does not care which — Strapi finds it by
-the `strapi.kind` field in its `package.json` — but the peer dependency has to
-be pinned by hand, for different reasons per manager: npm would otherwise
-auto-install the newest 5.x, yarn 1 would install nothing and only warn, and
-pnpm would resolve it against the range rather than against this site.
+Any package manager — pnpm, npm or yarn. The plugin itself does not care which:
+Strapi finds it by the `strapi.kind` field in its `package.json`.
 
 ```sh
 # pnpm
-pnpm add github:mitchdesigns-com/strapi-plugin-dropbox-backup#v0.1.1
+pnpm add github:mitchdesigns-com/strapi-plugin-dropbox-backup#v0.1.2
 pnpm add @strapi/data-transfer@$(node -p "require('@strapi/strapi/package.json').version")
 
 # npm
-npm install github:mitchdesigns-com/strapi-plugin-dropbox-backup#v0.1.1
+npm install github:mitchdesigns-com/strapi-plugin-dropbox-backup#v0.1.2
 npm install @strapi/data-transfer@$(node -p "require('@strapi/strapi/package.json').version")
 
 # yarn 1
-yarn add github:mitchdesigns-com/strapi-plugin-dropbox-backup#v0.1.1
+yarn add github:mitchdesigns-com/strapi-plugin-dropbox-backup#v0.1.2
 yarn add @strapi/data-transfer@$(node -p "require('@strapi/strapi/package.json').version")
 ```
 
-`@strapi/data-transfer` builds the export archive and reaches into Strapi core
-internals, so its version has to equal `@strapi/strapi`'s exactly — hence
-deriving it from the installed one. Skip that second command if it is already a
-dependency at the right version.
+`@strapi/data-transfer` is the one requirement the host app has to provide: the
+plugin builds the export archive with it, and it reaches into Strapi core
+internals, so **its version must equal `@strapi/strapi`'s exactly** — hence
+deriving it from the installed one rather than from a range. Skip that second
+command when it is already a dependency at the right version. Forgetting it
+fails loudly at boot with `Cannot find module '@strapi/data-transfer'`.
 
-Every peer is declared optional, so no manager installs one on its own. The
-other three (`@strapi/strapi`, `@strapi/design-system`, `react`) are already in
-any Strapi 5 app, directly or through `@strapi/strapi`, and the admin build
-resolves them through Strapi's own Vite aliases.
+**The plugin declares no peer dependencies at all**, deliberately. A declared
+peer - even an optional one - is something each package manager then tries to
+reconcile against the app's tree, and they disagree about how: npm 7+ installs
+non-optional peers at the newest in-range version (a 5.33 site would get
+data-transfer 5.58, an internals mismatch that only shows up at 03:30), while a
+range like `^2.0.0` refuses a prerelease, so a site on
+`@strapi/design-system@2.0.0-rc.30` could not install the plugin at all. The
+admin page's own imports (`@strapi/strapi/admin`, `@strapi/design-system`,
+`react`) are resolved by Strapi's Vite aliases from whatever the app already
+has, so declaring them bought nothing.
 
 Strapi 5 auto-loads any dependency whose `package.json` carries
 `strapi.kind: "plugin"`, so no `config/plugins.js` entry is required. Add one
