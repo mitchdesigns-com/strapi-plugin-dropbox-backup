@@ -15,23 +15,27 @@ Strapi finds it by the `strapi.kind` field in its `package.json`.
 ```sh
 # pnpm
 pnpm add github:mitchdesigns-com/strapi-plugin-dropbox-backup#v0.1.2
-pnpm add @strapi/data-transfer@$(node -p "require('@strapi/strapi/package.json').version")
+pnpm add --save-exact @strapi/data-transfer@$(node -p "require('@strapi/strapi/package.json').version")
 
 # npm
 npm install github:mitchdesigns-com/strapi-plugin-dropbox-backup#v0.1.2
-npm install @strapi/data-transfer@$(node -p "require('@strapi/strapi/package.json').version")
+npm install --save-exact @strapi/data-transfer@$(node -p "require('@strapi/strapi/package.json').version")
 
 # yarn 1
 yarn add github:mitchdesigns-com/strapi-plugin-dropbox-backup#v0.1.2
-yarn add @strapi/data-transfer@$(node -p "require('@strapi/strapi/package.json').version")
+yarn add --exact @strapi/data-transfer@$(node -p "require('@strapi/strapi/package.json').version")
 ```
 
 `@strapi/data-transfer` is the one requirement the host app has to provide: the
 plugin builds the export archive with it, and it reaches into Strapi core
 internals, so **its version must equal `@strapi/strapi`'s exactly** — hence
-deriving it from the installed one rather than from a range. Skip that second
-command when it is already a dependency at the right version. Forgetting it
-fails loudly at boot with `Cannot find module '@strapi/data-transfer'`.
+deriving it from the installed one rather than from a range. **Save it exactly**,
+with no caret: npm and pnpm both default to `^`, and a caret range lets a later
+`install` resolve a newer 5.x than the app's Strapi, which is the same mismatch
+again — reaching you at 03:30 rather than at install time. Skip that second
+command when it is already an exact dependency at the right version. Forgetting
+it altogether fails loudly at boot with
+`Cannot find module '@strapi/data-transfer'`.
 
 **The plugin declares no peer dependencies at all**, deliberately. A declared
 peer - even an optional one - is something each package manager then tries to
