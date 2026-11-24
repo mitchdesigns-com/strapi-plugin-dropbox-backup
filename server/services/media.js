@@ -16,7 +16,7 @@ const SINGLE_SHOT_LIMIT = 100 * 1024 * 1024;
  * second run recognise what it already uploaded.
  */
 const objectsForFile = (file) => {
-  const objects = [{ name: `${file.hash}${file.ext}`, url: file.url }];
+  const objects = [{ name: `${file.hash}${file.ext}`, url: file.url, hash: file.hash, ext: file.ext }];
 
   // formats is a JSON column; MySQL hands it back parsed, SQLite as a string.
   let formats = file.formats;
@@ -31,7 +31,7 @@ const objectsForFile = (file) => {
   if (formats && typeof formats === 'object') {
     for (const format of Object.values(formats)) {
       if (format?.hash && format?.ext) {
-        objects.push({ name: `${format.hash}${format.ext}`, url: format.url });
+        objects.push({ name: `${format.hash}${format.ext}`, url: format.url, hash: format.hash, ext: format.ext });
       }
     }
   }
@@ -74,6 +74,9 @@ module.exports = ({ strapi }) => {
     const failures = [];
 
     const isLocalProvider = (file) => file.provider === 'local';
+    // A private provider (e.g. an S3/R2 bucket without public access) refuses
+    // the stored URL, so each object is fetched through a signed URL instead.
+    const signed = Boolean(await strapi.plugin('upload').provider.isPrivate?.());
 
     const rows = strapi.db.queryBuilder('plugin::upload.file').select('*').stream();
 
@@ -100,6 +103,7 @@ module.exports = ({ strapi }) => {
               chunkSize,
               tmpDir,
               local: isLocalProvider(file),
+              signed,
             });
             existing.add(object.name);
             result.uploaded += 1;
@@ -132,7 +136,20 @@ module.exports = ({ strapi }) => {
     return result;
   }
 
-  async function uploadOne({ object, file, mediaFolder, chunkSize, tmpDir, local }) {
+  /**
+   * URL to download one object from. Signed per object, just before the fetch,
+   * so a long mirror never outlives a signature. The provider leaves URLs it
+   * does not own unchanged, so a mixed public/private provider still works.
+   */
+  async function fetchUrl(object, file, signed) {
+    if (!signed) return object.url;
+    const { url } = await strapi
+      .plugin('upload')
+      .provider.getSignedUrl({ ...file, url: object.url, hash: object.hash, ext: object.ext });
+    return url;
+  }
+
+  async function uploadOne({ object, file, mediaFolder, chunkSize, tmpDir, local, signed }) {
     const dropboxPath = `${mediaFolder}/${object.name}`;
 
     if (local) {
@@ -142,7 +159,7 @@ module.exports = ({ strapi }) => {
       return size;
     }
 
-    const response = await strapi.fetch(object.url);
+    const response = await strapi.fetch(await fetchUrl(object, file, signed));
     if (!response.ok) {
       // Body is drained by arrayBuffer below only on the success path, so an
       // error response is cancelled explicitly to free the socket.
