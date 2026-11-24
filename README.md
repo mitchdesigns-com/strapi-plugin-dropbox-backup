@@ -14,15 +14,15 @@ Strapi finds it by the `strapi.kind` field in its `package.json`.
 
 ```sh
 # pnpm
-pnpm add github:mitchdesigns-com/strapi-plugin-dropbox-backup#v0.1.2
+pnpm add github:mitchdesigns-com/strapi-plugin-dropbox-backup#v0.1.3
 pnpm add --save-exact @strapi/data-transfer@$(node -p "require('@strapi/strapi/package.json').version")
 
 # npm
-npm install github:mitchdesigns-com/strapi-plugin-dropbox-backup#v0.1.2
+npm install github:mitchdesigns-com/strapi-plugin-dropbox-backup#v0.1.3
 npm install --save-exact @strapi/data-transfer@$(node -p "require('@strapi/strapi/package.json').version")
 
 # yarn 1
-yarn add github:mitchdesigns-com/strapi-plugin-dropbox-backup#v0.1.2
+yarn add github:mitchdesigns-com/strapi-plugin-dropbox-backup#v0.1.3
 yarn add --exact @strapi/data-transfer@$(node -p "require('@strapi/strapi/package.json').version")
 ```
 
@@ -268,6 +268,10 @@ tar tzf <prefix><stamp>.tar.gz
   node-schedule reads a bare cron rule in the server's local timezone, which
   shifts twice a year with daylight saving, so the zone is always passed
   explicitly.
+- **Private buckets work.** When the upload provider reports itself private
+  (`isPrivate()`), each media object is fetched through the provider's signed
+  URL instead of its stored one, so files the public cannot read still reach
+  the mirror.
 - **Media dominates the runtime.** Assets are fetched one at a time over HTTP
   from the upload provider, two requests per file per format, so duration scales
   with the size of the media library rather than the database.
